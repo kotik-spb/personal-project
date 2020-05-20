@@ -14,31 +14,38 @@
           Узнать погоду!
         </span>
       </button>
-      <div class="weather-card" v-if="weatherData.iconcode">
-        <h2>{{ weatherData.name }} | {{ weatherData.countryCode }}</h2>
-        <div class="weather-box__type">
-          <img
-            id="wicon"
-            :src="iconUrl"
-            alt="Weather
+
+      <div class="preloader-box" v-if="loader">
+        <div class="lds-hourglass"></div>
+      </div>
+
+      <div class="weather-card" v-if="weatherData">
+        <div>
+          <h2>{{ weatherData.name }} | {{ weatherData.countryCode }}</h2>
+          <div class="weather-box__type">
+            <img
+              id="wicon"
+              :src="weatherData.iconcode"
+              alt="Weather
           icon"
-          />
-          <span>{{ weatherData.weatherType }}</span>
-        </div>
+            />
+            <span>{{ weatherData.weatherType }}</span>
+          </div>
 
-        <hr class="devider" />
+          <hr class="devider" />
 
-        <div class="weather-box__temp">
-          <p>Текущая температура: {{ weatherData.temp.current }} &#8451;</p>
-          <p>Минимальная температура: {{ weatherData.temp.min }} &#8451;</p>
-          <p>Максимальная температура: {{ weatherData.temp.max }} &#8451;</p>
-        </div>
+          <div class="weather-box__temp">
+            <p>Текущая температура: {{ weatherData.temp.current }} &#8451;</p>
+            <p>Минимальная температура: {{ weatherData.temp.min }} &#8451;</p>
+            <p>Максимальная температура: {{ weatherData.temp.max }} &#8451;</p>
+          </div>
 
-        <hr class="devider" />
+          <hr class="devider" />
 
-        <div class="weather-box__sun">
-          <p>Рассвет в {{ weatherData.sunrise }}</p>
-          <p>Закат в {{ weatherData.sunset }}</p>
+          <div class="weather-box__sun">
+            <p>Рассвет в {{ weatherData.sunrise }}</p>
+            <p>Закат в {{ weatherData.sunset }}</p>
+          </div>
         </div>
       </div>
     </div>
@@ -46,70 +53,38 @@
 </template>
 
 <script>
-import axios from "axios";
-
 export default {
   name: "Home",
   data() {
     return {
-      city: "",
-      weatherData: {
-        iconcode: null,
-        temp: {
-          current: null,
-          min: null,
-          max: null
-        },
-        weatherType: null,
-        name: null,
-        countryCode: null,
-        sunrise: null,
-        sunset: null,
-        windSpeed: null
-      }
+      city: ""
     };
   },
   methods: {
+    clearPage() {
+      this.weatherData = null;
+      this.$forceUpdate();
+    },
     checkWeather() {
+      this.clearPage();
       if (!this.city) {
         return alert("Введите название города!");
       }
-      axios
-        .get(
-          `http://api.openweathermap.org/data/2.5/weather?q=${this.city}&units=metric&lang=ru&appid=${this.$store.state.apiKey}`
-        )
-        .then(({ data }) => {
-          return this.dataFill(data);
-        })
-        .catch(err => {
-          console.log(err);
-        });
-    },
-    unixConverter(time) {
-      let date = new Date(time * 1000);
-      let h = date.getHours();
-      let m = date.getMinutes();
-      let s = date.getSeconds();
-      return h + ":" + m + ":" + s;
-    },
-    dataFill(data) {
-      this.weatherData.iconcode = data.weather[0].icon;
-      this.weatherData.temp.current = data.main.temp;
-      this.weatherData.temp.min = data.main.temp_min;
-      this.weatherData.temp.max = data.main.temp_max;
-      this.weatherData.weatherType = data.weather[0].description;
-      this.weatherData.name = data.name;
-      this.weatherData.countryCode = data.sys.country;
-      this.weatherData.sunrise = this.unixConverter(data.sys.sunrise);
-      this.weatherData.sunset = this.unixConverter(data.sys.sunset);
-      this.weatherData.windSpeed = data.wind.speed;
+      this.$store.dispatch("weather/getWeather", this.city);
+      this.city = "";
     }
   },
   computed: {
-    iconUrl() {
-      return (
-        "http://openweathermap.org/img/w/" + this.weatherData.iconcode + ".png"
-      );
+    weatherData: {
+      get() {
+        return this.$store.state.weather.weatherData;
+      },
+      set(value) {
+        return this.$store.commit("weather/SET_WEATHER", null);
+      }
+    },
+    loader() {
+      return this.$store.getters.loader;
     }
   }
 };
