@@ -21,7 +21,6 @@
     <div class="preloader-box" v-if="loader">
       <div class="lds-hourglass"></div>
     </div>
-    <!-- <div v-if="dataNews" class="news-container"> -->
     <transition-group
       name="fade"
       tag="div"
@@ -35,7 +34,6 @@
         :dataNews="data"
       ></single-news>
     </transition-group>
-    <!-- </div> -->
   </div>
 </template>
 
@@ -59,10 +57,10 @@ export default {
   computed: {
     dataNews: {
       get() {
-        return this.$store.getters.dataNews;
+        return this.$store.state.news.dataNews;
       },
       set(value) {
-        this.$store.commit("SET_DATANEWS", value);
+        this.$store.commit("news/SET_DATANEWS", value);
       }
     },
     loader() {
@@ -71,7 +69,6 @@ export default {
   },
   methods: {
     clearPage() {
-      console.log("cleared");
       this.dataNews = null;
       this.$forceUpdate();
     },
@@ -80,10 +77,10 @@ export default {
       if (!this.newsSection) {
         return alert("Выберите новостную секцию из списка!");
       }
-      this.$store.dispatch("getNews");
+      this.$store.dispatch("news/getNews");
     },
     vuexNewsSection() {
-      this.$store.dispatch("changeNewsSection", this.newsSection);
+      this.$store.dispatch("news/changeNewsSection", this.newsSection);
     }
   }
 };
@@ -150,38 +147,6 @@ select:focus {
   100% {
     transform: translateY(0);
     opacity: 1;
-  }
-}
-
-.lds-hourglass {
-  display: inline-block;
-  position: relative;
-  width: 80px;
-  height: 80px;
-}
-.lds-hourglass:after {
-  content: " ";
-  display: block;
-  border-radius: 50%;
-  width: 0;
-  height: 0;
-  margin: 8px;
-  box-sizing: border-box;
-  border: 32px solid #29ab87;
-  border-color: #29ab87 #50c878 #29ab87 #50c878;
-  animation: lds-hourglass 1.2s infinite;
-}
-@keyframes lds-hourglass {
-  0% {
-    transform: rotate(0);
-    animation-timing-function: cubic-bezier(0.55, 0.055, 0.675, 0.19);
-  }
-  50% {
-    transform: rotate(900deg);
-    animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
-  }
-  100% {
-    transform: rotate(1800deg);
   }
 }
 </style>
